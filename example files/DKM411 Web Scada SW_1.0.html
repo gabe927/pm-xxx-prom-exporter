@@ -1,0 +1,184 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!-- saved from url=(0023)http://192.168.100.214/ -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="robot" content="noindex">
+<title>DKM411 Web Scada SW:1.0</title>
+<style>
+#customers
+{
+font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;
+width:100%;
+border-collapse:collapse;
+}
+#customers td, #customers th 
+{
+font-size:12px;
+font-family:"Monospace",Courier New;
+border:1px solid #ffffff;
+padding:3px 7px 2px 7px;
+}
+#customers th 
+{
+font-size:12px;
+font-family:"Monospace",Courier New;
+text-align:left;
+padding-top:3px;
+padding-bottom:2px;
+background-color:#969696;
+color:#fff;
+}
+#customers tr.alt td 
+{
+color:#000;
+font-family:"Monospace",Courier New;
+background-color:#D4D4D4;
+}
+ul#list-nav {
+list-style:none;
+margin:20px;
+padding:0;
+width:800px
+}
+ul#list-nav li {
+display:inline
+}
+ul#list-nav li a {
+text-decoration:none;
+font-family:"Monospace",Courier New;
+padding:5px 0;
+width:120px;
+background:#222222;
+color:#eee;
+float:left;
+text-align:center;
+border-left:1px solid #fff;
+border-bottom:1px solid #fff;
+}
+h1 {font-size:250%; font-family:calibri;}
+#value1 font,td {
+font-family:"Monospace",Courier New;
+font-size:16px;
+color:#ffffff;
+border-bottom:1px dashed #fff;
+}
+#value2 font,th {
+font-family:"Monospace",Courier New;
+font-size:16px;
+color:#ff6600;
+}
+#value3 font,td.alt {
+border-bottom:0px;
+}
+input {
+width:32px; overflow:visible;
+}
+ul#list-nav li a:hover {
+background:#ff6600;
+color:#000
+}
+.parament { border: inset; border-width: 1px; height:17px;background: #ffffff; color:#000000;}
+</style>
+<script>
+var midlist=['ml1','ml1b','ml2','ml2b','ml3','ml3b','ml12','ml12b','ml23','ml23b','ml31','ml31b', 'mc1','mc1b','mc2','mc2b','mc3','mc3b','mc4','mc4b','mfr','mfrb','mva','mvab','mua','muab','mia','miab','mkw','mkwb','mkr','mkrb','mkv','mkvb','mph','mphb','md1','md1b','md2','md2b','md3','md3b','md4','md4b','md5','md5b','md6','md6b','mth1','mth1b','mth2','mth2b','mth3','mth3b','mth4','mth4b','mth5','mth5b','mth6','mth6b','mth7','mth7b','mth8','mth8b','mth9','mth9b','mth10','mth10b'];
+var ConvList=['etpf','canf','oprp','otpf'];
+var txt='';
+var scadaArray = new Array(40);
+var mc, gc, dmode, mnl, gnl, Rfrsh = 10;
+
+function filltable(){
+var ScadaVal, j=0, pf;
+var Temp = new Number(1.00);
+
+   for (k=0; k<34; k++){
+		Temp = scadaArray[k]; 
+		ScadaVal = Temp;
+		pf=' ';
+		if(k == 17){
+			if(scadaArray[38]==1) pf='cap'; else pf='ind';
+			document.getElementById('mu').innerHTML =''+pf;
+		}
+		document.getElementById(midlist[j+1]).innerHTML =''+ScadaVal;
+		j=j+2;
+   }
+	Rfrsh = scadaArray[34];
+	if(Rfrsh < 10)  Rfrsh = 10;
+}
+
+function getxml(){
+	var ajax, stat, xmld;
+  	var i = 0;
+   var point;
+   var m;
+
+   if(window.XMLHttpRequest){
+		ajax = new XMLHttpRequest();
+	}else{
+		ajax = new ActiveXObject('Microsoft.XMLHTTP');
+	}
+	ajax.open('GET', 'scd.xml', false);
+	ajax.send();
+	while(ajax.readyState != 4)
+	{
+		stat = ajax.statusText;
+	}
+   xmld = ajax.responseXML;
+   m = xmld.documentElement.getElementsByTagName('s');
+   for(i = 0; i < 35; i++)
+	{
+		scadaArray[i] = m[i].getAttribute('v');
+	}
+
+   filltable();
+}
+function mainfun(){
+var interval;
+    getxml();
+    interval = Rfrsh*1000;
+    setInterval(getxml, interval);
+}
+</script>
+</head>
+<body bgcolor="#000000" style="background: black;" text="white" onload="mainfun()">
+
+
+<h1 style="margin-left:60px; margin-top:50px; position:absolute;">WEB Scada</h1><br><br><br><br><br><br><br>
+<div style="margin-left:20px; position:absolute;">
+<ul id="list-nav">
+<li><a href="http://192.168.100.214/idx.html" style="background:#ff6600; color:#000;">Measurements</a></li>
+<li><a href="http://192.168.100.214/cnt.html">Counters</a></li><li><a href="http://192.168.100.214/eve.html">Events</a></li><li><a href="http://192.168.100.214/alm.html">Alarms</a></li>
+</ul></div><br><br><br>
+<div style="margin-left:20px;">
+   <table>
+   <colgroup></colgroup>
+   <colgroup width="80"></colgroup>
+   <colgroup></colgroup>
+   <colgroup></colgroup>
+   <colgroup></colgroup>
+   <colgroup width="80"></colgroup>
+   <colgroup></colgroup>
+   <colgroup></colgroup>
+   <colgroup></colgroup>
+   <colgroup width="80"></colgroup>
+   <colgroup></colgroup>
+   <colgroup></colgroup>
+   <tbody><tr><th colspan="4">LINE</th><th colspan="4">POWER</th><th colspan="4" id="engtab" style="visibility:visible;">THDs</th></tr>
+   <tr><td id="ml1">L1 Volt</td><td id="ml1b" align="right">     121.9</td><td>V</td>             	<td class="alt">&nbsp;</td><td id="mkw">Tot P</td><td id="mkwb" align="right">       7.8</td><td>kW</td>             		<td class="alt">&nbsp;</td><td id="mth1">THD L1</td><td id="mth1b" align="right">       4.6</td><td>%</td></tr>
+   <tr><td id="ml2">L2 Volt</td><td id="ml2b" align="right">     121.1</td><td>V</td>             	<td class="alt">&nbsp;</td><td id="mkr">Tot Q</td><td id="mkrb" align="right">      -7.2</td><td>kVAr</td>           		<td class="alt">&nbsp;</td><td id="mth2">THD L2</td><td id="mth2b" align="right">       4.6</td><td>%</td></tr>
+   <tr><td id="ml3">L3 Volt</td><td id="ml3b" align="right">     121.0</td><td>V</td>             	<td class="alt">&nbsp;</td><td id="mkv">Tot S</td><td id="mkvb" align="right">      10.6</td><td>kVA</td>           			<td class="alt">&nbsp;</td><td id="mth3">THD L3</td><td id="mth3b" align="right">       4.0</td><td>%</td></tr>
+   <tr><td id="ml12">L12 Volt</td><td id="ml12b" align="right">     210.9</td><td>V</td>           <td class="alt">&nbsp;</td><td id="mph">PowFactor</td><td id="mphb" align="right">    -0.734</td><td id="mu">ind</td>        	<td class="alt">&nbsp;</td><td id="mth4">THD L12</td><td id="mth4b" align="right">       5.7</td><td>%</td></tr>
+   <tr><td id="ml23">L23 Volt</td><td id="ml23b" align="right">     209.7</td><td>V</td>           <td class="alt">&nbsp;</td><td id="md1">Demand I1</td><td id="md1b" align="right">      84.2</td><td>A</td>          		<td class="alt">&nbsp;</td><td id="mth5">THD L23</td><td id="mth5b" align="right">       5.1</td><td>%</td></tr>
+   <tr><td id="ml31">L31 Volt</td><td id="ml31b" align="right">     210.0</td><td>V</td>          	<td class="alt">&nbsp;</td><td id="md2">Demand I2</td><td id="md2b" align="right">      75.9</td><td>A</td>          		<td class="alt">&nbsp;</td><td id="mth6">THD L31</td><td id="mth6b" align="right">       5.1</td><td>%</td></tr>
+   <tr height=""><td id="mc1">L1 Amps</td><td id="mc1b" align="right">      31.9</td><td>A</td>             	<td class="alt">&nbsp;</td><td id="md3">Demand I3</td><td id="md3b" align="right">      80.5</td><td>A</td>             	<td class="alt">&nbsp;</td><td id="mth7">THD I1</td><td id="mth7b" align="right">      13.8</td><td>%</td></tr>
+   <tr><td id="mc2">L2 Amps</td><td id="mc2b" align="right">      31.4</td><td>A</td>             	<td class="alt">&nbsp;</td><td id="md4">Demand Ia</td><td id="md4b" align="right">      80.1</td><td>A</td>             	<td class="alt">&nbsp;</td><td id="mth8">THD I2</td><td id="mth8b" align="right">      15.9</td><td>%</td></tr>
+   <tr><td id="mc3">L3 Amps</td><td id="mc3b" align="right">      30.0</td><td>A</td>             	<td class="alt">&nbsp;</td><td id="md5">Demand P</td><td id="md5b" align="right">      27.4</td><td>kW</td>             		<td class="alt">&nbsp;</td><td id="mth9">THD I3</td><td id="mth9b" align="right">      22.7</td><td>%</td></tr>
+   <tr><td id="mc4">N Amps</td><td id="mc4b" align="right">       2.4</td><td>A</td>             	<td class="alt">&nbsp;</td><td id="md6">Demand Q</td><td id="md6b" align="right">      -9.1</td><td>kVAr</td>             	<td class="alt">&nbsp;</td><td id="mth10">THD In</td><td id="mth10b" align="right">       6.4</td><td>%</td></tr>
+   <tr><td id="mfr">Frequency</td><td id="mfrb" align="right">     59.98</td><td>Hz</td>         										            																	</tr>
+   <tr><td id="mva">V-avrg</td><td id="mvab" align="right">     121.3</td><td>V</td>             									            																	</tr>
+   <tr><td id="mua">U-avrg</td><td id="muab" align="right">     210.2</td><td>V</td>             									            																	</tr>
+   <tr><td id="mia">I-avrg</td><td id="miab" align="right">      31.1</td><td>A</td>        											            																	</tr> 
+   </tbody></table>
+</div>
+
+
+</body></html>
