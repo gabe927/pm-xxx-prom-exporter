@@ -22,6 +22,7 @@ class PM_Meter:
         'u_avrg'      : None,
         'i_avrg'      : None,
         'tot_p'       : None,
+        'tot_q'       : None,
         'tot_s'       : None,
         'pow_factor'  : None,
         'demand_i1'   : None,
