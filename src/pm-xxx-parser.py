@@ -1,4 +1,6 @@
 import requests
+import time
+import re
 import logging
 log = logging.getLogger(__name__)
 
@@ -6,6 +8,7 @@ class PM_Meter:
     meters = []
 
     hostname = None
+    is_up = False
     values = {
         'l1_volt'     : None,
         'l2_volt'     : None,
@@ -85,7 +88,69 @@ class PM_Meter:
             return True
         else:
             return False
+    
+class PM_Parser:
+    cache_ttl = 1 #time to live in seconds for the cache before a new data must be pulled
+    _cache_time = -1
+    request_timeout = 2
+
+    def register_meter(self, hostname):
+        # check that meter isn't already registered
+        meter = PM_Meter.get_meter_from_hostname(hostname)
+        if meter != None:
+            return meter
+        # register new meter
+        return PM_Meter(hostname)
+
+    def unregister_meter(self, hostname):
+        PM_Meter.del_meter(hostname)
+
+    def set_cache_ttl_seconds(self, cache_ttl):
+        self.cache_ttl = cache_ttl
+        log.info(f"Parser cache TTL set to {cache_ttl} seconds")
+
+    def set_request_timeout_seconds(self, request_timeout):
+        self.request_timeout = request_timeout
+        log.info(f"Parser request timeout set to {request_timeout} seconds")
+
+    def get_data(self):
+        # check cache ttl
+        currTime = time.time()
+        if (currTime < self._cache_time + self.cache_ttl):
+            # return cache if ttl not met
+            log.debug(f"get_data returning cache | cache time:{self._cache_time} | currTime:{currTime}")
+            return PM_Meter.meters
+        
+        # get data for each meter, parse and update the class data
+        for m in PM_Meter.meters:
+            try:
+                response = requests.get(f"http://{m.hostname}/scd.xml", timeout=self.request_timeout)
+            except Exception as e:
+                log.warning(f"Meter ({m.hostname}) request error: {e}")
+                m.is_up = False
+                continue
+            if response.status_code != 200:
+                log.warning(f"Meter ({m.hostname}) returned status code ")
+                m.is_up = False
+                continue
+            
+            str_values = re.findall(r"[-+]?[.]?[\d]+(?:,\d\d\d)*[\.]?\d*(?:[eE][-+]?\d+)?", response.text)
+            values = [float(i) for i in str_values]
+            value_keys = list(m.values)
+            for i in range(len(m.values)):
+                m.values[value_keys[i]] = values[i]
+            logging.debug(f"Parsed values:{m.values}")
+            m.is_up = True
+
+        # update cache time
+        self._cache_time = currTime
+        log.debug(f"cache time updated:{currTime}")
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
+
+    # test with local scd.xml test file via Live Server
+    parser = PM_Parser()
+    parser.register_meter("127.0.0.1:5500/example%20files")
+    parser.get_data()
