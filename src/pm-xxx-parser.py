@@ -71,6 +71,20 @@ class PM_Meter:
     @classmethod
     def get_meters(self):
         return self.meters
+    
+    @classmethod
+    def new_meter(self, hostname):
+        return PM_Meter(hostname)
+    
+    @classmethod
+    def del_meter(self, hostname):
+        meter = self.get_meter_from_hostname(hostname)
+        if meter:
+            self.meters.remove(meter)
+            log.info(f"Meter ({hostname}) removed")
+            return True
+        else:
+            return False
 
 
 if __name__ == "__main__":
