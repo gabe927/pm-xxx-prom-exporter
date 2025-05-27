@@ -167,6 +167,7 @@ class PM_Parser:
             while True:
                 self.pull_data()
                 sleep_time = (self._cache_time + self.cache_ttl) - time.time()
+                if sleep_time < 0: sleep_time = 0
                 log.debug(f"sleeping for {sleep_time} seconds")
                 time.sleep(sleep_time)
         except KeyboardInterrupt:
