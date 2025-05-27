@@ -93,6 +93,9 @@ class PM_Parser:
     cache_ttl = 1 #time to live in seconds for the cache before a new data must be pulled
     _cache_time = -1
     request_timeout = 2
+    meter_update_callback = None
+    meter_down_callback = None
+    meter_removed_callback = None
 
     def register_meter(self, hostname):
         # check that meter isn't already registered
@@ -103,7 +106,11 @@ class PM_Parser:
         return PM_Meter(hostname)
 
     def unregister_meter(self, hostname):
-        PM_Meter.del_meter(hostname)
+        meter = PM_Meter.get_meter_from_hostname(hostname)
+        if meter:
+            if self.meter_removed_callback:
+                self.meter_removed_callback(meter)
+            PM_Meter.del_meter(hostname)
 
     def set_cache_ttl_seconds(self, cache_ttl):
         self.cache_ttl = cache_ttl
@@ -128,10 +135,14 @@ class PM_Parser:
             except Exception as e:
                 log.warning(f"Meter ({m.hostname}) request error: {e}")
                 m.is_up = False
+                if self.meter_down_callback:
+                    self.meter_down_callback(m)
                 continue
             if response.status_code != 200:
                 log.warning(f"Meter ({m.hostname}) returned status code ")
                 m.is_up = False
+                if self.meter_down_callback:
+                    self.meter_down_callback(m)
                 continue
             
             str_values = re.findall(r"[-+]?[.]?[\d]+(?:,\d\d\d)*[\.]?\d*(?:[eE][-+]?\d+)?", response.text)
@@ -141,6 +152,8 @@ class PM_Parser:
                 m.values[value_keys[i]] = values[i]
             logging.debug(f"Parsed values:{m.values}")
             m.is_up = True
+            if self.meter_update_callback:
+                self.meter_update_callback(m)
 
         # update cache time
         self._cache_time = currTime
