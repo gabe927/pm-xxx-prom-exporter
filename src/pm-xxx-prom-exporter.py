@@ -3,7 +3,9 @@ from werkzeug.middleware.dispatcher import DispatcherMiddleware
 from prometheus_client import make_wsgi_app, Enum, Counter, Gauge, Info
 from waitress import serve
 from pm_xxx_parser import PM_Parser
+from dotenv import load_dotenv
 import threading
+import os
 import logging
 log = logging.getLogger(__name__)
 
@@ -97,9 +99,24 @@ def meter_removed_callback(meter):
 
 
 if __name__ == "__main__":
+    # configure logging
     logging.basicConfig(level=logging.INFO)
+
+    # create parser
     parser = PM_Parser()
-    parser.register_meter("192.168.100.214")
+
+    ### load environment
+    # load .env file if available
+    load_dotenv()
+    hostnames_str = os.getenv("METERS")
+    if hostnames_str == None:
+        log.error("METERS environment variable not defined!")
+        exit()
+    hostnames = hostnames_str.split(",")
+    for m in hostnames:
+        parser.register_meter(m)
+
+    # run da threads
     parser_thread = threading.Thread(target=parser.run, args=(meter_update_callback, meter_down_callback, meter_removed_callback), daemon=True)
     parser_thread.start()
     serve(app, host="0.0.0.0", port=9584)
