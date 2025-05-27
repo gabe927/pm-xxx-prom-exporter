@@ -97,6 +97,15 @@ def meter_removed_callback(meter):
         gauges[k]["gauge"].remove(*label)
     log.debug(f"Gauges for meter ({meter.hostname}) removed")
 
+def getEnvVariable(var, isOptional=False, defaultValue=None):
+    value = os.getenv(var)
+    if value == None:
+        if isOptional:
+            value = defaultValue
+        else:
+            print(f"ERROR: Non-optional environment variable '{var}' not provided!")
+            exit()
+    return value
 
 if __name__ == "__main__":
     # configure logging
@@ -108,13 +117,12 @@ if __name__ == "__main__":
     ### load environment
     # load .env file if available
     load_dotenv()
-    hostnames_str = os.getenv("METERS")
-    if hostnames_str == None:
-        log.error("METERS environment variable not defined!")
-        exit()
+    hostnames_str = getEnvVariable("METERS")
     hostnames = hostnames_str.split(",")
     for m in hostnames:
         parser.register_meter(m)
+    parser.cache_ttl = int(getEnvVariable("SCRAPE_INTERVAL", isOptional=True, defaultValue=5))
+    parser.request_timeout = int(getEnvVariable("SCRAPE_TIMEOUT", isOptional=True, defaultValue=5))
 
     # run da threads
     parser_thread = threading.Thread(target=parser.run, args=(meter_update_callback, meter_down_callback, meter_removed_callback), daemon=True)
