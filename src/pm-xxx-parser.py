@@ -120,7 +120,7 @@ class PM_Parser:
         self.request_timeout = request_timeout
         log.info(f"Parser request timeout set to {request_timeout} seconds")
 
-    def get_data(self):
+    def pull_data(self):
         # check cache ttl
         currTime = time.time()
         if (currTime < self._cache_time + self.cache_ttl):
@@ -159,6 +159,15 @@ class PM_Parser:
         self._cache_time = currTime
         log.debug(f"cache time updated:{currTime}")
 
+    def run(self):
+        try:
+            while True:
+                self.pull_data()
+                sleep_time = (self._cache_time + self.cache_ttl) - time.time()
+                log.debug(f"sleeping for {sleep_time} seconds")
+                time.sleep(sleep_time)
+        except KeyboardInterrupt:
+            log.info("Keyboard Interrupt detected. Exiting...")
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
@@ -166,4 +175,4 @@ if __name__ == "__main__":
     # test with local scd.xml test file via Live Server
     parser = PM_Parser()
     parser.register_meter("127.0.0.1:5500/example%20files")
-    parser.get_data()
+    parser.run()
