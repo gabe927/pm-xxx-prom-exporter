@@ -159,7 +159,10 @@ class PM_Parser:
         self._cache_time = currTime
         log.debug(f"cache time updated:{currTime}")
 
-    def run(self):
+    def run(self, meter_update_callback=None, meter_down_callback=None, meter_removed_callback=None):
+        self.meter_update_callback = meter_update_callback
+        self.meter_down_callback = meter_down_callback
+        self.meter_removed_callback = meter_removed_callback
         try:
             while True:
                 self.pull_data()
