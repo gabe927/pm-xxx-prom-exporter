@@ -66,7 +66,7 @@ gauges = {
 }
 
 for k, v in gauges.items():
-    v["gauge"] = Gauge(k, v["description"], main_label)
+    v["gauge"] = Gauge(f"pm_meter_{k}", v["description"], main_label)
 
 
 log.info("Done setting up datapoints")
