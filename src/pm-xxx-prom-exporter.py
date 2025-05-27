@@ -64,7 +64,7 @@ gauges = {
 }
 
 for k, v in gauges.items():
-    v["Gauge"] = Gauge(k, v["description"], main_label)
+    v["gauge"] = Gauge(k, v["description"], main_label)
 
 
 log.info("Done setting up datapoints")
@@ -75,7 +75,7 @@ def meter_update_callback(meter):
     label = [meter.hostname]
     values = meter.values
     gauges["up"]["gauge"].labels(*label).set(1)
-    for k, v in values.item():
+    for k, v in values.items():
         gauges[k]["gauge"].labels(*label).set(v)
     log.debug(f"Gauges for meter ({meter.hostname}) updated")
 
@@ -83,7 +83,7 @@ def meter_down_callback(meter):
     label = [meter.hostname]
     values = meter.values
     gauges["up"]["gauge"].labels(*label).set(0)
-    for k, v in values.item():
+    for k, v in values.items():
         gauges[k]["gauge"].remove(*label)
     log.debug(f"Gauges for meter ({meter.hostname}) set to down state")
 
@@ -91,7 +91,7 @@ def meter_removed_callback(meter):
     label = [meter.hostname]
     values = meter.values
     gauges["up"]["gauge"].remove(*label)
-    for k, v in values.item():
+    for k, v in values.items():
         gauges[k]["gauge"].remove(*label)
     log.debug(f"Gauges for meter ({meter.hostname}) removed")
 
